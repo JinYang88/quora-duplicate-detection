@@ -27,8 +27,8 @@ embedding_dim = 300
 hidden_dim = 300
 out_dim = 1
 
-epochs = 1
-print_every = 20
+epochs = 20
+print_every = 500
 bidirectional = False
 
 

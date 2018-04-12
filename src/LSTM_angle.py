@@ -69,37 +69,6 @@ train_dl = datahelper.BatchWrapper(train_iter, ["Text1", "Text2", "Label"])
 valid_dl = datahelper.BatchWrapper(valid_iter, ["Text1", "Text2", "Label"])
 test_dl = datahelper.BatchWrapper(test_iter, ["Text1", "Text2", "Label"])
 print('Reading data done.')
-
-def predict_on(model, data_dl, loss_func, device ,model_state_path=None):
-    if model_state_path:
-        model.load_state_dict(torch.load(model_state_path))
-        print('Start predicting...')
-
-    model.eval()
-    res_list = []
-    label_list = []
-    loss = 0
-
-    
-    for text1, text2, label in data_dl:
-        hidden_init = model.init_hidden(label.size()[0], device)
-        y_pred = model(text1, text2, hidden_init)
-        loss += loss_func(y_pred, label).data.cpu()
-        y_pred = y_pred.data.max(1)[1].cpu().numpy()
-        res_list.extend(y_pred)
-        label_list.extend(label.data.cpu().numpy())
-        
-    acc = accuracy_score(res_list, label_list)
-    Precision = precision_score(res_list, label_list)
-    Recall = recall_score(res_list, label_list)
-    F1 = f1_score(res_list, label_list)
-
-    with open("res_list.txt", 'w') as fw:
-        for item in res_list:
-            fw.write('{}\n'.format(item))
-    
-    return loss, (acc, Precision, Recall, F1)
-
 def predict_on(model, data_dl, loss_func, device ,model_state_path=None):
     if model_state_path:
         model.load_state_dict(torch.load(model_state_path))
@@ -145,33 +114,33 @@ class LSTM_angel(torch.nn.Module) :
         
         self.lstm1 = nn.LSTM(embedding_dim, hidden_dim//2 if bidirectional else hidden_dim, batch_first=True, bidirectional=bidirectional)
         self.lstm2 = nn.LSTM(embedding_dim, hidden_dim//2 if bidirectional else hidden_dim, batch_first=True, bidirectional=bidirectional)
-        self.linearOut = nn.Linear(2 * hidden_dim, 2)
-        
+        self.linear1 = nn.Linear(2, 200)
+        self.linear2 = nn.Linear(200, 2)
         
     def forward(self, text1, text2, hidden_init) :
         text1_word_embedding = self.word_embedding(text1)
         text2_word_embedding = self.word_embedding(text2)
-
-        lstm_out1,(lstm_h1, lstm_c1) = self.lstm1(text1_word_embedding, None)
-        if self.bidirectional:
-            text1_seq_embedding = torch.cat((lstm_h1[0], lstm_h1[1]), dim=1)
-        else:
-            text1_seq_embedding = lstm_h1.squeeze(0)
-        
-        lstm_out2,(lstm_h2, lstm_c2) = self.lstm2(text2_word_embedding, None)
-        if self.bidirectional:
-            text2_seq_embedding = torch.cat((lstm_h2[0], lstm_h2[1]), dim=1)
-        else:
-            text2_seq_embedding = lstm_h2.squeeze(0)
-
-
-#         dot_value = torch.bmm(text1_seq_embedding.view(text1.size()[0], 1, self.hidden_dim), text2_seq_embedding.view(text1.size()[0], self.hidden_dim, 1))
-#         dot_value = dot_value.view(text1.size()[0], 1)
-#         dist_value = self.dist(text1_seq_embedding, text2_seq_embedding).view(text1.size()[0], 1)
-        feature_vec = torch.cat((text1_seq_embedding,text2_seq_embedding), dim=1)
+#         print(text1)
+#         print(text1_word_embedding[0:3])
+        text1_seq_embedding = self.lstm_embedding(self.lstm1, text1_word_embedding, hidden_init)
+        text2_seq_embedding = self.lstm_embedding(self.lstm2, text2_word_embedding, hidden_init)
+#         print("------")
+#         print(text1_seq_embedding[0][0:10])
+#         print(text2_seq_embedding[0][0:10])
+#         print("------")
+        dot_value = torch.bmm(text1_seq_embedding.view(text1.size()[0], 1, self.hidden_dim), text2_seq_embedding.view(text1.size()[0], self.hidden_dim, 1))
+        dot_value = dot_value.view(text1.size()[0], 1)
+        dist_value = self.dist(text1_seq_embedding, text2_seq_embedding).view(text1.size()[0], 1)
+#         print(dot_value)
+#         print(dist_value)
+#         feature_vec = torch.cat((text1_seq_embedding,text2_seq_embedding), dim=1)
+        feature_vec = torch.cat((dot_value,dist_value), dim=1)
+#         print(feature_vec)
 #         sys.exit()
-        linear_res = self.linearOut(feature_vec)
-        return F.log_softmax(linear_res, dim=1)
+        linearout_1 = self.linear1(feature_vec)
+        linearout_1 = F.relu(linearout_1)
+        linearout_2 = self.linear2(linearout_1)
+        return F.log_softmax(linearout_2, dim=1)
     
     def lstm_embedding(self, lstm, word_embedding ,hidden_init):
         lstm_out,(lstm_h, lstm_c) = lstm(word_embedding, None)

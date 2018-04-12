@@ -71,6 +71,9 @@ train_dl = datahelper.BatchWrapper(train_iter, ["Text1", "Text2", "Label"])
 valid_dl = datahelper.BatchWrapper(valid_iter, ["Text1", "Text2", "Label"])
 test_dl = datahelper.BatchWrapper(test_iter, ["Text1", "Text2", "Label"])
 print('Reading data done.')
+
+
+
 def predict_on(model, data_dl, loss_func, device ,model_state_path=None):
     if model_state_path:
         model.load_state_dict(torch.load(model_state_path))
@@ -117,6 +120,8 @@ class LSTM_angel(torch.nn.Module) :
         self.lstm1 = nn.LSTM(embedding_dim, hidden_dim//2 if bidirectional else hidden_dim, batch_first=True, bidirectional=bidirectional)
         self.lstm2 = nn.LSTM(embedding_dim, hidden_dim//2 if bidirectional else hidden_dim, batch_first=True, bidirectional=bidirectional)
         self.linear1 = nn.Linear(2, 200)
+        self.dropout1 = nn.Dropout(p=0.1)
+        self.batchnorm1 = nn.BatchNorm1d(200)
         self.linear2 = nn.Linear(200, 2)
         
     def forward(self, text1, text2, hidden_init) :
@@ -141,6 +146,8 @@ class LSTM_angel(torch.nn.Module) :
 #         sys.exit()
         linearout_1 = self.linear1(feature_vec)
         linearout_1 = F.relu(linearout_1)
+        linearout_1 = self.dropout1(linearout_1)
+        linearout_1 = self.batchnorm1(linearout_1)
         linearout_2 = self.linear2(linearout_1)
         return F.log_softmax(linearout_2, dim=1)
     
@@ -158,6 +165,7 @@ class LSTM_angel(torch.nn.Module) :
             return (Variable(torch.randn(layer_num, batch_size, self.hidden_dim//layer_num)),Variable(torch.randn(layer_num, batch_size, self.hidden_dim//layer_num)))  
         else:
             return (Variable(torch.randn(layer_num, batch_size, self.hidden_dim//layer_num).cuda()),Variable(torch.randn(layer_num, batch_size, self.hidden_dim//layer_num).cuda()))  
+
 
 
 print('Initialing model..')

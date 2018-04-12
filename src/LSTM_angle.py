@@ -174,7 +174,7 @@ class LSTM_angel(torch.nn.Module) :
         linearout_4 = self.batchnorm4(linearout_4)
 
 
-        linearout_5 = self.linear2(linearout_4)
+        linearout_5 = self.linear5(linearout_4)
 
         return F.log_softmax(linearout_5, dim=1)
     

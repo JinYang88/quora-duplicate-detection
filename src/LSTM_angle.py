@@ -100,6 +100,36 @@ def predict_on(model, data_dl, loss_func, device ,model_state_path=None):
     
     return loss, (acc, Precision, Recall, F1)
 
+def predict_on(model, data_dl, loss_func, device ,model_state_path=None):
+    if model_state_path:
+        model.load_state_dict(torch.load(model_state_path))
+        print('Start predicting...')
+
+    model.eval()
+    res_list = []
+    label_list = []
+    loss = 0
+
+    
+    for text1, text2, label in data_dl:
+        hidden_init = model.init_hidden(label.size()[0], device)
+        y_pred = model(text1, text2, hidden_init)
+        loss += loss_func(y_pred, label).data.cpu()
+        y_pred = y_pred.data.max(1)[1].cpu().numpy()
+        res_list.extend(y_pred)
+        label_list.extend(label.data.cpu().numpy())
+        
+    acc = accuracy_score(res_list, label_list)
+    Precision = precision_score(res_list, label_list)
+    Recall = recall_score(res_list, label_list)
+    F1 = f1_score(res_list, label_list)
+
+    with open("res_list.txt", 'w') as fw:
+        for item in res_list:
+            fw.write('{}\n'.format(item))
+    
+    return loss, (acc, Precision, Recall, F1)
+
 
 class LSTM_angel(torch.nn.Module) :
     def __init__(self, vocab_size, embedding_dim, hidden_dim, batch_size, wordvec_matrix, bidirectional):
@@ -120,9 +150,12 @@ class LSTM_angel(torch.nn.Module) :
     def forward(self, text1, text2, hidden_init) :
         text1_word_embedding = self.word_embedding(text1)
         text2_word_embedding = self.word_embedding(text2)
-#         print(text1_word_embedding)
+#         print(text1)
+#         print(text1_word_embedding[0:3])
         text1_seq_embedding = self.lstm_embedding(text1_word_embedding, hidden_init)
         text2_seq_embedding = self.lstm_embedding(text2_word_embedding, hidden_init)
+#         print(text1_word_embedding[0])
+#         print(text1_seq_embedding[0][0:10])
         dot_value = torch.bmm(text1_seq_embedding.view(text1.size()[0], 1, self.hidden_dim), text2_seq_embedding.view(text1.size()[0], self.hidden_dim, 1))
         dot_value = dot_value.view(text1.size()[0], 1)
         dist_value = self.dist(text1_seq_embedding, text2_seq_embedding).view(text1.size()[0], 1)
@@ -135,7 +168,7 @@ class LSTM_angel(torch.nn.Module) :
         return F.log_softmax(linear_res, dim=1)
     
     def lstm_embedding(self, word_embedding ,hidden_init):
-        lstm_out,(lstm_h, lstm_c) = self.lstm(word_embedding, hidden_init)
+        lstm_out,(lstm_h, lstm_c) = self.lstm(word_embedding, None)
         if self.bidirectional:
             seq_embedding = torch.cat((lstm_h[0], lstm_h[1]), dim=1)
         else:

@@ -122,7 +122,16 @@ class LSTM_angel(torch.nn.Module) :
         self.linear1 = nn.Linear(2, 200)
         self.dropout1 = nn.Dropout(p=0.1)
         self.batchnorm1 = nn.BatchNorm1d(200)
-        self.linear2 = nn.Linear(200, 2)
+        self.linear2 = nn.Linear(200, 200)
+        self.dropout2 = nn.Dropout(p=0.1)
+        self.batchnorm2 = nn.BatchNorm1d(200)
+        self.linear3 = nn.Linear(200, 200)
+        self.dropout3 = nn.Dropout(p=0.1)
+        self.batchnorm3 = nn.BatchNorm1d(200)
+        self.linear4 = nn.Linear(200, 200)
+        self.dropout4 = nn.Dropout(p=0.1)
+        self.batchnorm4 = nn.BatchNorm1d(200)
+        self.linear5 = nn.Linear(200, 2)
         
     def forward(self, text1, text2, hidden_init) :
         text1_word_embedding = self.word_embedding(text1)
@@ -145,12 +154,29 @@ class LSTM_angel(torch.nn.Module) :
 #         print(feature_vec)
 #         sys.exit()
         linearout_1 = self.linear1(feature_vec)
-        linearout_1 = self.batchnorm1(linearout_1)
         linearout_1 = F.relu(linearout_1)
         linearout_1 = self.dropout1(linearout_1)
-        linearout_2 = self.linear2(linearout_1)
+        linearout_1 = self.batchnorm1(linearout_1)
 
-        return F.log_softmax(linearout_2, dim=1)
+        linearout_2 = self.linear2(linearout_1)
+        linearout_2 = F.relu(linearout_2)
+        linearout_2 = self.dropout2(linearout_2)
+        linearout_2 = self.batchnorm2(linearout_2)
+
+        linearout_3 = self.linear3(linearout_2)
+        linearout_3 = F.relu(linearout_3)
+        linearout_3 = self.dropout3(linearout_3)
+        linearout_3 = self.batchnorm3(linearout_3)
+
+        linearout_4 = self.linear4(linearout_3)
+        linearout_4 = F.relu(linearout_4)
+        linearout_4 = self.dropout4(linearout_4)
+        linearout_4 = self.batchnorm4(linearout_4)
+
+
+        linearout_5 = self.linear2(linearout_4)
+
+        return F.log_softmax(linearout_5, dim=1)
     
     def lstm_embedding(self, lstm, word_embedding ,hidden_init):
         lstm_out,(lstm_h, lstm_c) = lstm(word_embedding, None)

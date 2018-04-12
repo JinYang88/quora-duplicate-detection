@@ -179,7 +179,7 @@ if not test_mode:
             MODEL.train()
             hidden_init = MODEL.init_hidden(label.size()[0], device)
             y_pred = MODEL(text1, text2, hidden_init)
-            loss = loss_func(y_pred, label.view(-1,1))
+            loss = loss_func(y_pred, label)
             MODEL.zero_grad()
             loss.backward()
             optimizer.step()

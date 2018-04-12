@@ -20,7 +20,7 @@ from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_sc
 torch.manual_seed(42)
 
 test_mode = 0  # 0 for train+test 1 for test
-device = -1 # 0 for gpu, -1 for cpu
+device = 0 # 0 for gpu, -1 for cpu
 
 batch_size = 32
 embedding_dim = 300
@@ -107,7 +107,7 @@ class LSTM_angel(torch.nn.Module) :
     
         self.word_embedding = nn.Embedding(vocab_size, embedding_dim)
         self.word_embedding.weight.data.copy_(wordvec_matrix)
-        self.word_embedding.weight.requires_grad = False
+        # self.word_embedding.weight.requires_grad = False
         
         self.lstm = nn.LSTM(embedding_dim, hidden_dim//2 if bidirectional else hidden_dim, batch_first=True, bidirectional=bidirectional)
         self.sigmoid = nn.Sigmoid()

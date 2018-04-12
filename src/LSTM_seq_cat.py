@@ -119,7 +119,7 @@ class LSTM_seq_cat(torch.nn.Module) :
         
         self.lstm1 = nn.LSTM(embedding_dim, hidden_dim//2 if bidirectional else hidden_dim, batch_first=True, bidirectional=bidirectional)
         self.lstm2 = nn.LSTM(embedding_dim, hidden_dim//2 if bidirectional else hidden_dim, batch_first=True, bidirectional=bidirectional)
-        self.linear1 = nn.Linear(2, 200)
+        self.linear1 = nn.Linear(embedding_dim * 2, 200)
         self.dropout1 = nn.Dropout(p=0.1)
         self.batchnorm1 = nn.BatchNorm1d(200)
         self.linear2 = nn.Linear(200, 200)

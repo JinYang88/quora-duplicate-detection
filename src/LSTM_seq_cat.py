@@ -70,35 +70,6 @@ valid_dl = datahelper.BatchWrapper(valid_iter, ["Text1", "Text2", "Label"])
 test_dl = datahelper.BatchWrapper(test_iter, ["Text1", "Text2", "Label"])
 print('Reading data done.')
 
-def predict_on(model, data_dl, loss_func, device ,model_state_path=None):
-    if model_state_path:
-        model.load_state_dict(torch.load(model_state_path))
-        print('Start predicting...')
-
-    model.eval()
-    res_list = []
-    label_list = []
-    loss = 0
-
-    
-    for text1, text2, label in data_dl:
-        hidden_init = model.init_hidden(label.size()[0], device)
-        y_pred = model(text1, text2, hidden_init)
-        loss += loss_func(y_pred, label).data.cpu()
-        y_pred = y_pred.data.max(1)[1].cpu().numpy()
-        res_list.extend(y_pred)
-        label_list.extend(label.data.cpu().numpy())
-        
-    acc = accuracy_score(res_list, label_list)
-    Precision = precision_score(res_list, label_list)
-    Recall = recall_score(res_list, label_list)
-    F1 = f1_score(res_list, label_list)
-
-    with open("res_list.txt", 'w') as fw:
-        for item in res_list:
-            fw.write('{}\n'.format(item))
-    
-    return loss, (acc, Precision, Recall, F1)
 
 def predict_on(model, data_dl, loss_func, device ,model_state_path=None):
     if model_state_path:

@@ -145,10 +145,11 @@ class LSTM_angel(torch.nn.Module) :
 #         print(feature_vec)
 #         sys.exit()
         linearout_1 = self.linear1(feature_vec)
+        linearout_1 = self.batchnorm1(linearout_1)
         linearout_1 = F.relu(linearout_1)
         linearout_1 = self.dropout1(linearout_1)
-        linearout_1 = self.batchnorm1(linearout_1)
         linearout_2 = self.linear2(linearout_1)
+
         return F.log_softmax(linearout_2, dim=1)
     
     def lstm_embedding(self, lstm, word_embedding ,hidden_init):

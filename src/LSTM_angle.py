@@ -99,6 +99,7 @@ def predict_on(model, data_dl, loss_func, device ,model_state_path=None):
             fw.write('{}\n'.format(item))
     
     return loss, (acc, Precision, Recall, F1)
+
 def predict_on(model, data_dl, loss_func, device ,model_state_path=None):
     if model_state_path:
         model.load_state_dict(torch.load(model_state_path))
@@ -144,7 +145,7 @@ class LSTM_angel(torch.nn.Module) :
         
         self.lstm1 = nn.LSTM(embedding_dim, hidden_dim//2 if bidirectional else hidden_dim, batch_first=True, bidirectional=bidirectional)
         self.lstm2 = nn.LSTM(embedding_dim, hidden_dim//2 if bidirectional else hidden_dim, batch_first=True, bidirectional=bidirectional)
-        self.linearOut = nn.Linear(2, 2)
+        self.linearOut = nn.Linear(2 * hidden_dim, 2)
         
         
     def forward(self, text1, text2, hidden_init) :
@@ -158,12 +159,12 @@ class LSTM_angel(torch.nn.Module) :
 #         print(text1_seq_embedding[0][0:10])
 #         print(text2_seq_embedding[0][0:10])
 #         print("------")
-        dot_value = torch.bmm(text1_seq_embedding.view(text1.size()[0], 1, self.hidden_dim), text2_seq_embedding.view(text1.size()[0], self.hidden_dim, 1))
-        dot_value = dot_value.view(text1.size()[0], 1)
-        dist_value = self.dist(text1_seq_embedding, text2_seq_embedding).view(text1.size()[0], 1)
+#         dot_value = torch.bmm(text1_seq_embedding.view(text1.size()[0], 1, self.hidden_dim), text2_seq_embedding.view(text1.size()[0], self.hidden_dim, 1))
+#         dot_value = dot_value.view(text1.size()[0], 1)
+#         dist_value = self.dist(text1_seq_embedding, text2_seq_embedding).view(text1.size()[0], 1)
 #         print(dot_value)
 #         print(dist_value)
-        feature_vec = torch.cat((dot_value,dist_value), dim=1)
+        feature_vec = torch.cat((text1_seq_embedding,text2_seq_embedding), dim=1)
 #         print(feature_vec)
 #         sys.exit()
         linear_res = self.linearOut(feature_vec)

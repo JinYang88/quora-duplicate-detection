@@ -235,7 +235,7 @@ if not test_mode:
 
 
 
-loss, (acc, Precision, Recall, F1) = predict_on(MODEL, valid_dl, nn.NLLLoss(), device)
+loss, (acc, Precision, Recall, F1) = predict_on(MODEL, test_dl, nn.NLLLoss(), device, '../model_save/LSTM_angel.pth')
 
 print("=================")
 print("Evaluation results on test dataset:")

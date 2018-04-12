@@ -22,7 +22,7 @@ torch.manual_seed(42)
 test_mode = 0  # 0 for train+test 1 for test
 device = 0 # 0 for gpu, -1 for cpu
 
-batch_size = 32
+batch_size = 64
 embedding_dim = 300
 hidden_dim = 300
 out_dim = 1

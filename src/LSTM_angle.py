@@ -19,6 +19,7 @@ from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_sc
 
 torch.manual_seed(42)
 
+
 test_mode = 0  # 0 for train+test 1 for test
 device = 0 # 0 for gpu, -1 for cpu
 
@@ -26,10 +27,11 @@ batch_size = 32
 embedding_dim = 300
 hidden_dim = 300
 out_dim = 1
+min_freq = 3
 
 epochs = 20
 print_every = 500
-bidirectional = False
+bidirectional = True
 
 
 
@@ -49,7 +51,7 @@ test = data.TabularDataset(
         path='../data/quora/test.tsv', format='tsv',
         fields=[('Label', LABEL), ('Text1', TEXT), ('Text2', TEXT), ('Id', ID)], skip_header=True)
 
-TEXT.build_vocab(train)
+TEXT.build_vocab(train, min_freq=min_freq)
 print('Building vocabulary Finished.')
 
 

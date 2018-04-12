@@ -106,7 +106,7 @@ class LSTM_angel(torch.nn.Module) :
         self.batch_size = batch_size
     
         self.word_embedding = nn.Embedding(vocab_size, embedding_dim)
-        self.word_embedding.weight.data.copy_(wordvec_matrix)
+        # self.word_embedding.weight.data.copy_(wordvec_matrix)
         # self.word_embedding.weight.requires_grad = False
         
         self.lstm = nn.LSTM(embedding_dim, hidden_dim//2 if bidirectional else hidden_dim, batch_first=True, bidirectional=bidirectional)

@@ -55,7 +55,7 @@ print('Building vocabulary Finished.')
 
 word_matrix = datahelper.wordlist_to_matrix("../data/quora/wordvec.txt", TEXT.vocab.itos, device, embedding_dim)
 
-train_iter = data.BucketIterator(dataset=train, batch_size=batch_size, sort_key=lambda x: len(x.Text1) + len(x.Text2), device=device, repeat=False)
+train_iter = data.BucketIterator(dataset=train, batch_size=batch_size, sort_key=lambda x: len(x.Text1) + len(x.Text2), device=device, shuffle=True, repeat=False)
 valid_iter = data.Iterator(dataset=valid, batch_size=batch_size, device=device, shuffle=False, repeat=False)
 test_iter = data.Iterator(dataset=test, batch_size=batch_size, device=device, shuffle=False, repeat=False)
 
@@ -106,8 +106,8 @@ class LSTM_angel(torch.nn.Module) :
         self.batch_size = batch_size
     
         self.word_embedding = nn.Embedding(vocab_size, embedding_dim)
-        # self.word_embedding.weight.data.copy_(wordvec_matrix)
-        # self.word_embedding.weight.requires_grad = False
+        self.word_embedding.weight.data.copy_(wordvec_matrix)
+        self.word_embedding.weight.requires_grad = False
         
         self.lstm = nn.LSTM(embedding_dim, hidden_dim//2 if bidirectional else hidden_dim, batch_first=True, bidirectional=bidirectional)
         self.sigmoid = nn.Sigmoid()
@@ -154,7 +154,7 @@ max_metric = 0
 if not test_mode:
     loss_func = F.binary_cross_entropy
     parameters = list(filter(lambda p: p.requires_grad, MODEL.parameters()))
-    optimizer = optim.Adam(parameters, lr=1e-1)
+    optimizer = optim.Adam(parameters, lr=1e-2)
     print('Start training..')
 
     train_iter.create_batches()

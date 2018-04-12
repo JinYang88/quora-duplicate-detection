@@ -3,4 +3,5 @@ data/
 *.tsv
 *.pyc
 *.ipynb
+*.txt
 __pycache__/

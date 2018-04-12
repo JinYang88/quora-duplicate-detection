@@ -22,14 +22,15 @@ torch.manual_seed(42)
 test_mode = 0  # 0 for train+test 1 for test
 device = -1 # 0 for gpu, -1 for cpu
 
-batch_size = 3
+batch_size = 32
 embedding_dim = 300
-hidden_dim = 100
+hidden_dim = 128
 out_dim = 1
 
 epochs = 1
-print_every = 1
+print_every = 20
 bidirectional = False
+
 
 
 print('Reading data..')
@@ -55,9 +56,14 @@ print('Building vocabulary Finished.')
 word_matrix = datahelper.wordlist_to_matrix("../data/quora/wordvec.txt", TEXT.vocab.itos, device, embedding_dim)
 
 train_iter = data.BucketIterator(dataset=train, batch_size=batch_size, sort_key=lambda x: len(x.Text1) + len(x.Text2), device=device, repeat=False)
-valid_iter = data.Iterator(dataset=valid, batch_size=len(valid.examples), device=device, shuffle=False, repeat=False)
-test_iter = data.Iterator(dataset=test, batch_size=len(test.examples), device=device, shuffle=False, repeat=False)
+valid_iter = data.Iterator(dataset=valid, batch_size=batch_size, device=device, shuffle=False, repeat=False)
+test_iter = data.Iterator(dataset=test, batch_size=batch_size, device=device, shuffle=False, repeat=False)
 
+
+train_dl = datahelper.BatchWrapper(train_iter, ["Text1", "Text2", "Label"])
+valid_dl = datahelper.BatchWrapper(valid_iter, ["Text1", "Text2", "Label"])
+test_dl = datahelper.BatchWrapper(test_iter, ["Text1", "Text2", "Label"])
+print('Reading data done.')
 
 train_dl = datahelper.BatchWrapper(train_iter, ["Text1", "Text2", "Label"])
 valid_dl = datahelper.BatchWrapper(valid_iter, ["Text1", "Text2", "Label"])

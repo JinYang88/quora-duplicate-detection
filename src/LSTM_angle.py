@@ -28,7 +28,7 @@ hidden_dim = 128
 out_dim = 1
 
 epochs = 1
-print_every = 20
+print_every = 500
 bidirectional = False
 
 

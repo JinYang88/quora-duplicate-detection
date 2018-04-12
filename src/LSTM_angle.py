@@ -151,21 +151,24 @@ class LSTM_angel(torch.nn.Module) :
     def forward(self, text1, text2, hidden_init) :
         text1_word_embedding = self.word_embedding(text1)
         text2_word_embedding = self.word_embedding(text2)
-#         print(text1)
-#         print(text1_word_embedding[0:3])
-        text1_seq_embedding = self.lstm_embedding(self.lstm1, text1_word_embedding, hidden_init)
-        text2_seq_embedding = self.lstm_embedding(self.lstm2, text2_word_embedding, hidden_init)
-#         print("------")
-#         print(text1_seq_embedding[0][0:10])
-#         print(text2_seq_embedding[0][0:10])
-#         print("------")
+
+        lstm_out1,(lstm_h1, lstm_c1) = lstm(text1_word_embedding, None)
+        if self.bidirectional:
+            text1_seq_embedding = torch.cat((lstm_h1[0], lstm_h1[1]), dim=1)
+        else:
+            text1_seq_embedding = lstm_h1.squeeze(0)
+        
+        lstm_out2,(lstm_h2, lstm_c2) = lstm(text2_word_embedding, None)
+        if self.bidirectional:
+            text2_seq_embedding = torch.cat((lstm_h2[0], lstm_h2[1]), dim=1)
+        else:
+            text2_seq_embedding = lstm_h2.squeeze(0)
+
+
 #         dot_value = torch.bmm(text1_seq_embedding.view(text1.size()[0], 1, self.hidden_dim), text2_seq_embedding.view(text1.size()[0], self.hidden_dim, 1))
 #         dot_value = dot_value.view(text1.size()[0], 1)
 #         dist_value = self.dist(text1_seq_embedding, text2_seq_embedding).view(text1.size()[0], 1)
-#         print(dot_value)
-#         print(dist_value)
         feature_vec = torch.cat((text1_seq_embedding,text2_seq_embedding), dim=1)
-#         print(feature_vec)
 #         sys.exit()
         linear_res = self.linearOut(feature_vec)
         return F.log_softmax(linear_res, dim=1)

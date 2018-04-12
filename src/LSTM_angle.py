@@ -95,6 +95,10 @@ def predict_on(model, data_dl, loss_func, device ,model_state_path=None):
     Recall = recall_score(res_list, label_list)
     F1 = f1_score(res_list, label_list)
 
+    with open("res_list.txt", 'w') as fw:
+        for item in res_list:
+            fw.write('{}\n'.format(item))
+    
     return loss, (acc, Precision, Recall, F1)
 
 
@@ -104,24 +108,32 @@ class LSTM_angel(torch.nn.Module) :
         self.hidden_dim = hidden_dim
         self.bidirectional = bidirectional
         self.batch_size = batch_size
+        self.dist = nn.PairwiseDistance(2)
     
         self.word_embedding = nn.Embedding(vocab_size, embedding_dim)
         self.word_embedding.weight.data.copy_(wordvec_matrix)
         self.word_embedding.weight.requires_grad = False
         
         self.lstm = nn.LSTM(embedding_dim, hidden_dim//2 if bidirectional else hidden_dim, batch_first=True, bidirectional=bidirectional)
-        self.sigmoid = nn.Sigmoid()
+        self.linearOut = nn.Linear(2, 2)
+        
         
     def forward(self, text1, text2, hidden_init) :
         text1_word_embedding = self.word_embedding(text1)
         text2_word_embedding = self.word_embedding(text2)
+#         print(text1_word_embedding)
         text1_seq_embedding = self.lstm_embedding(text1_word_embedding, hidden_init)
         text2_seq_embedding = self.lstm_embedding(text2_word_embedding, hidden_init)
         dot_value = torch.bmm(text1_seq_embedding.view(text1.size()[0], 1, self.hidden_dim), text2_seq_embedding.view(text1.size()[0], self.hidden_dim, 1))
         dot_value = dot_value.view(text1.size()[0], 1)
-#         print(self.sigmoid(dot_value))
-        return self.sigmoid(dot_value)
-#         return self.sigmoid(text1_seq_embedding.dot(text2_seq_embedding))
+        dist_value = self.dist(text1_seq_embedding, text2_seq_embedding).view(text1.size()[0], 1)
+#         print(dot_value)
+#         print(dist_value)
+        feature_vec = torch.cat((dot_value,dist_value), dim=1)
+#         print(feature_vec)
+#         sys.exit()
+        linear_res = self.linearOut(feature_vec)
+        return F.log_softmax(linear_res, dim=1)
     
     def lstm_embedding(self, word_embedding ,hidden_init):
         lstm_out,(lstm_h, lstm_c) = self.lstm(word_embedding, hidden_init)
@@ -152,9 +164,9 @@ max_metric = 0
 
 # Train
 if not test_mode:
-    loss_func = F.binary_cross_entropy
+    loss_func = nn.NLLLoss()
     parameters = list(filter(lambda p: p.requires_grad, MODEL.parameters()))
-    optimizer = optim.SGD(parameters, lr=1e-3)
+    optimizer = optim.Adam(parameters, lr=1e-3)
     print('Start training..')
 
     train_iter.create_batches()
@@ -185,7 +197,7 @@ if not test_mode:
 
 
 
-loss, (acc, Precision, Recall, F1) = predict_on(MODEL, valid_dl, F.binary_cross_entropy, device)
+loss, (acc, Precision, Recall, F1) = predict_on(MODEL, valid_dl, nn.NLLLoss(), device)
 
 print("=================")
 print("Evaluation results on test dataset:")

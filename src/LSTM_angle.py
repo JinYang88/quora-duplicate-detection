@@ -154,7 +154,7 @@ max_metric = 0
 if not test_mode:
     loss_func = F.binary_cross_entropy
     parameters = list(filter(lambda p: p.requires_grad, MODEL.parameters()))
-    optimizer = optim.Adam(parameters, lr=1e-2)
+    optimizer = optim.Adam(parameters, lr=1e-1)
     print('Start training..')
 
     train_iter.create_batches()

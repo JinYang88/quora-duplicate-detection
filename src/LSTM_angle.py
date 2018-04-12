@@ -86,7 +86,7 @@ def predict_on(model, data_dl, loss_func, device ,model_state_path=None):
     for text1, text2, label in data_dl:
         hidden_init = model.init_hidden(label.size()[0], device)
         y_pred = model(text1, text2, hidden_init)
-        loss += loss_func(y_pred.data.cpu(), label.float().view(-1,1)).data.cpu()
+        loss += loss_func(y_pred, label.float().view(-1,1)).data.cpu()
         res_list.extend(1 if item > 0.5 else 0 for item in y_pred.data.cpu().numpy())
         label_list.extend(label.data.cpu().numpy())
         

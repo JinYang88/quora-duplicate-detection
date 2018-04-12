@@ -38,7 +38,7 @@ bidirectional = True
 print('Reading data..')
 ID = data.Field(sequential=False, batch_first=True, use_vocab=False)
 TEXT = data.Field(sequential=True, lower=True, eos_token='<EOS>', init_token='<BOS>',
-                  pad_token='<PAD>', fix_length=None, batch_first=True, use_vocab=True)
+                  pad_token='<PAD>', fix_length=25, batch_first=True, use_vocab=True)
 LABEL = data.Field(sequential=False, batch_first=True, use_vocab=False)
 
 train = data.TabularDataset(

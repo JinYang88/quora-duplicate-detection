@@ -152,13 +152,13 @@ class LSTM_angel(torch.nn.Module) :
         text1_word_embedding = self.word_embedding(text1)
         text2_word_embedding = self.word_embedding(text2)
 
-        lstm_out1,(lstm_h1, lstm_c1) = lstm(text1_word_embedding, None)
+        lstm_out1,(lstm_h1, lstm_c1) = self.lstm1(text1_word_embedding, None)
         if self.bidirectional:
             text1_seq_embedding = torch.cat((lstm_h1[0], lstm_h1[1]), dim=1)
         else:
             text1_seq_embedding = lstm_h1.squeeze(0)
         
-        lstm_out2,(lstm_h2, lstm_c2) = lstm(text2_word_embedding, None)
+        lstm_out2,(lstm_h2, lstm_c2) = self.lstm2(text2_word_embedding, None)
         if self.bidirectional:
             text2_seq_embedding = torch.cat((lstm_h2[0], lstm_h2[1]), dim=1)
         else:

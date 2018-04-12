@@ -24,7 +24,7 @@ device = 0 # 0 for gpu, -1 for cpu
 
 batch_size = 32
 embedding_dim = 300
-hidden_dim = 128
+hidden_dim = 300
 out_dim = 1
 
 epochs = 1
@@ -198,7 +198,7 @@ max_metric = 0
 if not test_mode:
     loss_func = nn.NLLLoss()
     parameters = list(filter(lambda p: p.requires_grad, MODEL.parameters()))
-    optimizer = optim.Adam(parameters, lr=1e-4)
+    optimizer = optim.Adam(parameters, lr=1e-3)
     print('Start training..')
 
     train_iter.create_batches()

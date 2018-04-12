@@ -70,8 +70,6 @@ valid_dl = datahelper.BatchWrapper(valid_iter, ["Text1", "Text2", "Label"])
 test_dl = datahelper.BatchWrapper(test_iter, ["Text1", "Text2", "Label"])
 print('Reading data done.')
 
-
-
 def predict_on(model, data_dl, loss_func, device ,model_state_path=None):
     if model_state_path:
         model.load_state_dict(torch.load(model_state_path))
@@ -86,8 +84,9 @@ def predict_on(model, data_dl, loss_func, device ,model_state_path=None):
     for text1, text2, label in data_dl:
         hidden_init = model.init_hidden(label.size()[0], device)
         y_pred = model(text1, text2, hidden_init)
-        loss += loss_func(y_pred, label.view(-1,1)).data.cpu()
-        res_list.extend(1 if item > 0.5 else 0 for item in y_pred.data.cpu().numpy())
+        loss += loss_func(y_pred, label).data.cpu()
+        y_pred = y_pred.data.max(1)[1].cpu().numpy()
+        res_list.extend(y_pred)
         label_list.extend(label.data.cpu().numpy())
         
     acc = accuracy_score(res_list, label_list)

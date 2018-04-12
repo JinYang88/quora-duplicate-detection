@@ -28,7 +28,7 @@ hidden_dim = 128
 out_dim = 1
 
 epochs = 1
-print_every = 500
+print_every = 20
 bidirectional = False
 
 
@@ -165,7 +165,7 @@ max_metric = 0
 if not test_mode:
     loss_func = nn.NLLLoss()
     parameters = list(filter(lambda p: p.requires_grad, MODEL.parameters()))
-    optimizer = optim.Adam(parameters, lr=1e-3)
+    optimizer = optim.Adam(parameters, lr=1e-4)
     print('Start training..')
 
     train_iter.create_batches()

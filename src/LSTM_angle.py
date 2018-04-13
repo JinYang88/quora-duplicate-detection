@@ -30,7 +30,7 @@ out_dim = 1
 min_freq = 3
 
 epochs = 20
-print_every = 500
+print_every = 3000
 bidirectional = True
 
 
@@ -156,22 +156,22 @@ class LSTM_angel(torch.nn.Module) :
         linearout_1 = self.linear1(feature_vec)
         linearout_1 = F.relu(linearout_1)
         linearout_1 = self.dropout1(linearout_1)
-        linearout_1 = self.batchnorm1(linearout_1)
+        # linearout_1 = self.batchnorm1(linearout_1)
 
         linearout_2 = self.linear2(linearout_1)
         linearout_2 = F.relu(linearout_2)
         linearout_2 = self.dropout2(linearout_2)
-        linearout_2 = self.batchnorm2(linearout_2)
+        # linearout_2 = self.batchnorm2(linearout_2)
 
         linearout_3 = self.linear3(linearout_2)
         linearout_3 = F.relu(linearout_3)
         linearout_3 = self.dropout3(linearout_3)
-        linearout_3 = self.batchnorm3(linearout_3)
+        # linearout_3 = self.batchnorm3(linearout_3)
 
         linearout_4 = self.linear4(linearout_3)
         linearout_4 = F.relu(linearout_4)
         linearout_4 = self.dropout4(linearout_4)
-        linearout_4 = self.batchnorm4(linearout_4)
+        # linearout_4 = self.batchnorm4(linearout_4)
 
 
         linearout_5 = self.linear5(linearout_4)

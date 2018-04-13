@@ -25,7 +25,7 @@ device = 0 # 0 for gpu, -1 for cpu
 
 batch_size = 32
 embedding_dim = 300
-hidden_dim = 300
+hidden_dim = 600
 out_dim = 1
 min_freq = 3
 
@@ -139,7 +139,7 @@ class LSTM_angel(torch.nn.Module) :
 #         print(text1)
 #         print(text1_word_embedding[0:3])
         text1_seq_embedding = self.lstm_embedding(self.lstm1, text1_word_embedding, hidden_init)
-        text2_seq_embedding = self.lstm_embedding(self.lstm2, text2_word_embedding, hidden_init)
+        text2_seq_embedding = self.lstm_embedding(self.lstm1, text2_word_embedding, hidden_init)
 #         print("------")
 #         print(text1_seq_embedding[0][0:10])
 #         print(text2_seq_embedding[0][0:10])

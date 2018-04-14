@@ -156,22 +156,22 @@ class LSTM_seq_cat(torch.nn.Module) :
         linearout_1 = self.linear1(feature_vec)
         linearout_1 = F.relu(linearout_1)
         linearout_1 = self.dropout1(linearout_1)
-        linearout_1 = self.batchnorm1(linearout_1)
+        # linearout_1 = self.batchnorm1(linearout_1)
 
         linearout_2 = self.linear2(linearout_1)
         linearout_2 = F.relu(linearout_2)
         linearout_2 = self.dropout2(linearout_2)
-        linearout_2 = self.batchnorm2(linearout_2)
+        # linearout_2 = self.batchnorm2(linearout_2)
 
         linearout_3 = self.linear3(linearout_2)
         linearout_3 = F.relu(linearout_3)
         linearout_3 = self.dropout3(linearout_3)
-        linearout_3 = self.batchnorm3(linearout_3)
+        # linearout_3 = self.batchnorm3(linearout_3)
 
         linearout_4 = self.linear4(linearout_3)
         linearout_4 = F.relu(linearout_4)
         linearout_4 = self.dropout4(linearout_4)
-        linearout_4 = self.batchnorm4(linearout_4)
+        # linearout_4 = self.batchnorm4(linearout_4)
 
 
         linearout_5 = self.linear5(linearout_4)
@@ -251,3 +251,59 @@ print("Precision: {}.".format(Precision))
 print("Recall: {}.".format(Recall))
 print("F1: {}.".format(F1))
 print("=================")                                    
+
+
+
+
+# coding = utf-8
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.autograd import Variable
+from math import sqrt
+import numpy as np
+
+class CNN_Text(nn.Module):
+    def __init__(self, args):
+        super(CNN_Text, self).__init__()
+        self.args = args
+        
+        V = args.embed_num
+        D = args.embed_dim
+        
+        Ci = 1
+        Co = args.kernel_num
+        Ks = args.kernel_sizes
+
+        self.embed = nn.Embedding(V, D)
+
+        # use pre-trained
+        if args.word_Embedding:
+            pass
+            # self.embed.weight.data.copy_(args.pretrained_weight)
+        
+
+        self.convs1 = nn.ModuleList([nn.Conv2d(Ci, Co, (K, D)) for K in Ks])
+        self.dropout = nn.Dropout(args.dropout)
+        self.fc1 = nn.Linear(1, 1)
+
+    def forward(self, q1, q2):
+
+        q1 = self.embed(q1)
+        q1 = q1.unsqueeze(1)  # (N, Ci, W, D)
+        q1 = [F.tanh(conv(q1)).squeeze(3) for conv in self.convs1]  # [(N, Co, W), ...]*len(Ks)
+        q1 = [i.size(2) * F.avg_pool1d(i, i.size(2)).squeeze(2) for i in q1]  # [(N, Co), ...]*len(Ks)
+        q1 = [F.tanh(i) for i in q1]
+        q1 = torch.cat(q1, 1) # 64 * 300
+        
+        q2 = self.embed(q2)
+        q2 = q2.unsqueeze(1)  # (N, Ci, W, D)
+        q2 = [F.tanh(conv(q2)).squeeze(3) for conv in self.convs1]  # [(N, Co, W), ...]*len(Ks)
+        q2 = [i.size(2) * F.avg_pool1d(i, i.size(2)).squeeze(2) for i in q2]  # [(N, Co), ...]*len(Ks)
+        q2 = [F.tanh(i) for i in q2]
+        q2 = torch.cat(q2, 1)
+        
+        cos_ans = F.cosine_similarity(q1, q2)
+
+        # cos_ans = F.sigmoid(cos_ans)
+        return cos_ans
